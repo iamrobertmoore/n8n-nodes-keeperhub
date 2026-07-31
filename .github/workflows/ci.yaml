@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Typecheck, build and test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      # `typecheck` also compiles test/sdk-conformance.ts, which fails the build
+      # if our local types drift from @keeperhub/sdk's published contract.
+      - name: Install, typecheck, build, test
+        run: |
+          npm ci
+          npm run typecheck
+          npm run build
+          npm test

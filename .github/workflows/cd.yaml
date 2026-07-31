@@ -1,0 +1,46 @@
+name: CD
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+concurrency:
+  group: "publish"
+  cancel-in-progress: true
+
+jobs:
+  check-version:
+    runs-on: ubuntu-latest
+    outputs:
+      should_publish: ${{ steps.check-version.outputs.local_version_is_higher }}
+      tag: ${{ steps.check-version.outputs.tag }}
+      version: ${{ steps.check-version.outputs.local_version }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm ci
+      - id: check-version
+        run: npm run check-version
+
+  publish:
+    needs: check-version
+    if: needs.check-version.outputs.should_publish == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write        # required so npm can authenticate via OIDC trusted publishing
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22.14.0"
+          registry-url: "https://registry.npmjs.org"
+      - run: npm ci
+      - run: npm run build
+      # Trusted publishing (OIDC) requires npm >= 11.5.1; actions/setup-node
+      # currently ships an older npm bundled with Node, so it's upgraded here.
+      - run: npm install -g npm@^11
+      - run: npm publish --provenance --tag ${{ needs.check-version.outputs.tag }}

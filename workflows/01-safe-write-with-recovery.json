@@ -1,0 +1,135 @@
+{
+  "name": "KeeperHub — Safe Write with Recovery",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "a1000000-0000-4000-8000-000000000001",
+      "name": "When clicking 'Execute workflow'",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [-260, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Stand-in for whatever decided the amount — an LLM, a price feed, a\n// health-factor check. Agents get this wrong, and that is the point: the\n// interesting question is what the execution layer does next.\n//\n// 999 ETH is deliberately more than the wallet holds.\nreturn [{\n  json: {\n    reason: 'Position under threshold — repaying',\n    recipient: '0x000000000000000000000000000000000000dEaD',\n    amount: '999',\n    attempt: 'first'\n  }\n}];"
+      },
+      "id": "a1000000-0000-4000-8000-000000000002",
+      "name": "Agent decides an amount",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-40, 300]
+    },
+    {
+      "parameters": {
+        "resource": "transfer",
+        "operation": "send",
+        "chainId": 11155111,
+        "recipientAddress": "={{ $json.recipient }}",
+        "amount": "={{ $json.amount }}",
+        "tokenAddress": "",
+        "options": {}
+      },
+      "id": "a1000000-0000-4000-8000-000000000003",
+      "name": "KeeperHub — attempt 1",
+      "type": "n8n-nodes-keeperhub.keeperHub",
+      "typeVersion": 1,
+      "position": [200, 300],
+      "onError": "continueErrorOutput",
+      "credentials": {
+        "keeperHubApi": {
+          "id": "REPLACE_WITH_YOUR_CREDENTIAL_ID",
+          "name": "KeeperHub account"
+        }
+      },
+      "notes": "Simulates before submitting. This attempt never reaches the chain — the dry run catches it and no gas is spent."
+    },
+    {
+      "parameters": {
+        "jsCode": "// The simulation gate stopped attempt 1 before any gas was spent, and the\n// normalised error tells us why. Recalculate something the wallet can\n// actually afford and try again — this is the recovery the audit trail\n// should show.\nconst failure = $json.error ?? 'unknown';\n\nreturn [{\n  json: {\n    recovered_from: failure.slice(0, 200),\n    recipient: '0x000000000000000000000000000000000000dEaD',\n    amount: '0.0001',\n    attempt: 'retry'\n  }\n}];"
+      },
+      "id": "a1000000-0000-4000-8000-000000000004",
+      "name": "Recalculate a safe amount",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 420]
+    },
+    {
+      "parameters": {
+        "resource": "transfer",
+        "operation": "send",
+        "chainId": 11155111,
+        "recipientAddress": "={{ $json.recipient }}",
+        "amount": "={{ $json.amount }}",
+        "tokenAddress": "",
+        "options": {}
+      },
+      "id": "a1000000-0000-4000-8000-000000000005",
+      "name": "KeeperHub — retry",
+      "type": "n8n-nodes-keeperhub.keeperHub",
+      "typeVersion": 1,
+      "position": [720, 420],
+      "credentials": {
+        "keeperHubApi": {
+          "id": "REPLACE_WITH_YOUR_CREDENTIAL_ID",
+          "name": "KeeperHub account"
+        }
+      },
+      "notes": "Same node, affordable amount. Simulates clean, submits with an idempotency key, polls to a transaction hash."
+    },
+    {
+      "parameters": {
+        "resource": "execution",
+        "operation": "get",
+        "executionId": "={{ $json.executionId }}",
+        "executionSource": "direct"
+      },
+      "id": "a1000000-0000-4000-8000-000000000006",
+      "name": "KeeperHub — audit trail",
+      "type": "n8n-nodes-keeperhub.keeperHub",
+      "typeVersion": 1,
+      "position": [980, 420],
+      "credentials": {
+        "keeperHubApi": {
+          "id": "REPLACE_WITH_YOUR_CREDENTIAL_ID",
+          "name": "KeeperHub account"
+        }
+      },
+      "notes": "The proof surface: trigger, simulation, submitted transaction, gas used, outcome, timestamps."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Nothing to recover from — attempt 1 landed. Shown for completeness so the\n// canvas reads correctly in both directions.\nreturn [{ json: { note: 'First attempt landed; no recovery needed', tx: $json.transactionLink } }];"
+      },
+      "id": "a1000000-0000-4000-8000-000000000007",
+      "name": "Landed first time",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 180]
+    }
+  ],
+  "connections": {
+    "When clicking 'Execute workflow'": {
+      "main": [[{ "node": "Agent decides an amount", "type": "main", "index": 0 }]]
+    },
+    "Agent decides an amount": {
+      "main": [[{ "node": "KeeperHub — attempt 1", "type": "main", "index": 0 }]]
+    },
+    "KeeperHub — attempt 1": {
+      "main": [
+        [{ "node": "Landed first time", "type": "main", "index": 0 }],
+        [{ "node": "Recalculate a safe amount", "type": "main", "index": 0 }]
+      ]
+    },
+    "Recalculate a safe amount": {
+      "main": [[{ "node": "KeeperHub — retry", "type": "main", "index": 0 }]]
+    },
+    "KeeperHub — retry": {
+      "main": [[{ "node": "KeeperHub — audit trail", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": { "executionOrder": "v1" },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

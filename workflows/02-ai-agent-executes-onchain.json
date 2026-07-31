@@ -1,0 +1,72 @@
+{
+  "name": "KeeperHub — AI Agent Executes Onchain",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "b2000000-0000-4000-8000-000000000001",
+      "name": "When chat message received",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [-260, 300],
+      "webhookId": "b2000000-0000-4000-8000-0000000000ff"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are a treasury operator. You may move funds onchain using the KeeperHub tool.\n\nRules:\n- Always use chain 11155111 (Ethereum Sepolia). Never mainnet.\n- Keep individual transfers at or below 0.001 ETH.\n- The KeeperHub tool simulates before it submits. If it reports that a transfer would revert, do not retry the same amount — work out what the wallet can afford and try that instead.\n- Always report the transaction link back to the user."
+        }
+      },
+      "id": "b2000000-0000-4000-8000-000000000002",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [40, 300]
+    },
+    {
+      "parameters": { "options": {} },
+      "id": "b2000000-0000-4000-8000-000000000003",
+      "name": "Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [-40, 520],
+      "notes": "Any chat model works. Swap freely."
+    },
+    {
+      "parameters": {
+        "resource": "transfer",
+        "operation": "send",
+        "chainId": 11155111,
+        "recipientAddress": "={{ $fromAI('recipientAddress', 'The 0x address to send to', 'string') }}",
+        "amount": "={{ $fromAI('amount', 'Human-readable amount of ETH, e.g. 0.0001', 'string') }}",
+        "tokenAddress": "",
+        "options": {}
+      },
+      "id": "b2000000-0000-4000-8000-000000000004",
+      "name": "KeeperHub",
+      "type": "n8n-nodes-keeperhub.keeperHub",
+      "typeVersion": 1,
+      "position": [220, 520],
+      "credentials": {
+        "keeperHubApi": {
+          "id": "REPLACE_WITH_YOUR_CREDENTIAL_ID",
+          "name": "KeeperHub account"
+        }
+      },
+      "notes": "usableAsTool: true — the agent calls this directly. The simulate gate, idempotency key and retry/backoff all still apply, so the agent cannot skip the safety sequence even if it wants to."
+    }
+  ],
+  "connections": {
+    "When chat message received": {
+      "main": [[{ "node": "AI Agent", "type": "main", "index": 0 }]]
+    },
+    "Chat Model": {
+      "ai_languageModel": [[{ "node": "AI Agent", "type": "ai_languageModel", "index": 0 }]]
+    },
+    "KeeperHub": {
+      "ai_tool": [[{ "node": "AI Agent", "type": "ai_tool", "index": 0 }]]
+    }
+  },
+  "settings": { "executionOrder": "v1" },
+  "pinData": {},
+  "meta": { "templateCredsSetupCompleted": false }
+}

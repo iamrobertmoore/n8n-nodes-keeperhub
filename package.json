@@ -1,0 +1,63 @@
+{
+  "name": "n8n-nodes-keeperhub",
+  "version": "0.1.0",
+  "description": "Execute onchain transactions from n8n via KeeperHub — simulate-first, idempotent, with retries, gas handling and a full audit trail. Usable as an AI Agent tool.",
+  "keywords": [
+    "n8n-community-node-package",
+    "keeperhub",
+    "onchain",
+    "blockchain",
+    "web3",
+    "ethereum",
+    "agent",
+    "automation"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/iamrobertmoore/n8n-nodes-keeperhub",
+  "author": {
+    "name": "Robert Moore",
+    "email": "iamrobertmoore@gmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iamrobertmoore/n8n-nodes-keeperhub.git"
+  },
+  "engines": {
+    "node": ">=22.0"
+  },
+  "main": "index.js",
+  "scripts": {
+    "build": "rm -rf dist && tsc && mkdir -p dist/nodes/KeeperHub dist/credentials && cp nodes/KeeperHub/keeperhub.svg dist/nodes/KeeperHub/keeperhub.svg && cp nodes/KeeperHub/keeperhub-dark.svg dist/nodes/KeeperHub/keeperhub-dark.svg && cp nodes/KeeperHub/keeperhub.svg dist/credentials/keeperhub.svg",
+    "dev": "tsc --watch",
+    "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
+    "test": "node --test test/run-tests.js",
+    "check-version": "node bin/check-version.js",
+    "prepublishOnly": "npm run build"
+  },
+  "files": [
+    "dist",
+    "index.js"
+  ],
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "credentials": [
+      "dist/credentials/KeeperHubApi.credentials.js"
+    ],
+    "nodes": [
+      "dist/nodes/KeeperHub/KeeperHub.node.js"
+    ]
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependencies": {
+    "n8n-workflow": "*"
+  },
+  "devDependencies": {
+    "@keeperhub/sdk": "^0.1.1",
+    "@types/node": "^22.0.0",
+    "n8n-workflow": "^2.16.0",
+    "semver": "^7.7.2",
+    "typescript": "^5.6.0"
+  }
+}

@@ -1,0 +1,10 @@
+node_modules/
+dist/
+*.tsbuildinfo
+.DS_Store
+.env
+npm-debug.log*
+.env.local
+
+# personal release/ops notes, not part of the package
+*.local.md
