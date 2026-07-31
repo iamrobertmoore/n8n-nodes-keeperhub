@@ -119,15 +119,25 @@ export class KeeperHub implements INodeType {
 
 				returnData.push({ json: output, pairedItem: { item: i } });
 			} catch (error) {
+				const nodeError =
+					error instanceof NodeOperationError
+						? error
+						: new NodeOperationError(this.getNode(), error as Error, { itemIndex: i });
+
+				// `continueOnFail()` is true for BOTH "continue (using error output)" and
+				// "continue (using regular output)", so it cannot tell us which branch the
+				// user wants. What routes an item to the error output is the `error`
+				// property on INodeExecutionData — without it the engine sees a clean
+				// return and sends everything down output 0.
 				if (this.continueOnFail()) {
 					const json: IDataObject = { error: (error as Error).message };
 					if (error instanceof KeeperHubApiError) {
 						json.keeperhub = error.normalised as unknown as IDataObject;
 					}
-					returnData.push({ json, pairedItem: { item: i } });
+					returnData.push({ json, error: nodeError, pairedItem: { item: i } });
 					continue;
 				}
-				throw new NodeOperationError(this.getNode(), error as Error, { itemIndex: i });
+				throw nodeError;
 			}
 		}
 

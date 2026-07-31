@@ -45,7 +45,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// The simulation gate stopped attempt 1 before any gas was spent, and the\n// normalised error tells us why. Recalculate something the wallet can\n// actually afford and try again — this is the recovery the audit trail\n// should show.\nconst failure = $json.error ?? 'unknown';\n\nreturn [{\n  json: {\n    recovered_from: failure.slice(0, 200),\n    recipient: '0x000000000000000000000000000000000000dEaD',\n    amount: '0.0001',\n    attempt: 'retry'\n  }\n}];"
+        "jsCode": "// The simulation gate stopped attempt 1 before any gas was spent, and the\n// normalised error tells us why. Recalculate something the wallet can\n// actually afford and try again — this is the recovery the audit trail\n// should show.\nconst failure = String(\n  $json.error?.message ?? $json.error ?? $json.keeperhub?.message ?? 'unknown'\n);\n\nreturn [{\n  json: {\n    recovered_from: failure.slice(0, 200),\n    recipient: '0x000000000000000000000000000000000000dEaD',\n    amount: '0.0001',\n    attempt: 'retry'\n  }\n}];"
       },
       "id": "a1000000-0000-4000-8000-000000000004",
       "name": "Recalculate a safe amount",
