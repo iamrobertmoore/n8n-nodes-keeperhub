@@ -6,61 +6,83 @@
       "id": "b2000000-0000-4000-8000-000000000001",
       "name": "When chat message received",
       "type": "@n8n/n8n-nodes-langchain.chatTrigger",
-      "typeVersion": 1.1,
-      "position": [-260, 300],
+      "typeVersion": 1.4,
+      "position": [-300, 300],
       "webhookId": "b2000000-0000-4000-8000-0000000000ff"
     },
     {
       "parameters": {
         "options": {
-          "systemMessage": "You are a treasury operator. You may move funds onchain using the KeeperHub tool.\n\nRules:\n- Always use chain 11155111 (Ethereum Sepolia). Never mainnet.\n- Keep individual transfers at or below 0.001 ETH.\n- The KeeperHub tool simulates before it submits. If it reports that a transfer would revert, do not retry the same amount — work out what the wallet can afford and try that instead.\n- Always report the transaction link back to the user."
+          "systemMessage": "You are a treasury operator with the ability to move funds onchain through the KeeperHub tool.\n\nRules:\n- Only ever use chain 11155111 (Ethereum Sepolia). Never mainnet.\n- Keep any single transfer at or below 0.001 ETH.\n- The tool simulates every transfer before submitting it. If it reports that a transfer would revert, do not retry the same amount — work out something the wallet can afford and try that instead.\n- Always report the resulting transaction link back to the user.\n- If you are unsure of an address, ask rather than guessing."
         }
       },
       "id": "b2000000-0000-4000-8000-000000000002",
       "name": "AI Agent",
       "type": "@n8n/n8n-nodes-langchain.agent",
-      "typeVersion": 1.7,
-      "position": [40, 300]
+      "typeVersion": 3.1,
+      "position": [-40, 300]
     },
     {
-      "parameters": { "options": {} },
+      "parameters": {
+        "model": "claude-sonnet-5",
+        "options": {}
+      },
       "id": "b2000000-0000-4000-8000-000000000003",
-      "name": "Chat Model",
-      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
-      "typeVersion": 1,
-      "position": [-40, 520],
-      "notes": "Any chat model works. Swap freely."
+      "name": "Anthropic Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.5,
+      "position": [-120, 540],
+      "credentials": {
+        "anthropicApi": {
+          "id": "REPLACE_WITH_YOUR_CREDENTIAL_ID",
+          "name": "Anthropic account"
+        }
+      }
     },
     {
       "parameters": {
         "resource": "transfer",
         "operation": "send",
         "chainId": 11155111,
-        "recipientAddress": "={{ $fromAI('recipientAddress', 'The 0x address to send to', 'string') }}",
-        "amount": "={{ $fromAI('amount', 'Human-readable amount of ETH, e.g. 0.0001', 'string') }}",
+        "recipientAddress": "={{ $fromAI('recipientAddress', 'The 0x address to send funds to', 'string') }}",
+        "amount": "={{ $fromAI('amount', 'Human-readable amount of ETH to send, for example 0.0001', 'string') }}",
         "tokenAddress": "",
-        "options": {}
+        "options": {},
+        "descriptionType": "manual",
+        "toolDescription": "Send ETH on Ethereum Sepolia through KeeperHub. Simulates the transfer first and refuses to submit anything that would revert, submits with an idempotency key so it cannot double-send, then waits for confirmation and returns the transaction hash and link."
       },
       "id": "b2000000-0000-4000-8000-000000000004",
       "name": "KeeperHub",
-      "type": "n8n-nodes-keeperhub.keeperHub",
+      "type": "n8n-nodes-keeperhub.keeperHubTool",
       "typeVersion": 1,
-      "position": [220, 520],
+      "position": [140, 540],
       "credentials": {
         "keeperHubApi": {
           "id": "REPLACE_WITH_YOUR_CREDENTIAL_ID",
           "name": "KeeperHub account"
         }
       },
-      "notes": "usableAsTool: true — the agent calls this directly. The simulate gate, idempotency key and retry/backoff all still apply, so the agent cannot skip the safety sequence even if it wants to."
+      "notes": "The safety sequence lives in the node, not the prompt — so the agent cannot skip it."
+    },
+    {
+      "parameters": {},
+      "id": "b2000000-0000-4000-8000-000000000005",
+      "name": "Simple Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [0, 540],
+      "notes": "So the agent remembers the first attempt when it recalculates after a refused transfer."
     }
   ],
   "connections": {
     "When chat message received": {
       "main": [[{ "node": "AI Agent", "type": "main", "index": 0 }]]
     },
-    "Chat Model": {
+    "Anthropic Chat Model": {
       "ai_languageModel": [[{ "node": "AI Agent", "type": "ai_languageModel", "index": 0 }]]
+    },
+    "Simple Memory": {
+      "ai_memory": [[{ "node": "AI Agent", "type": "ai_memory", "index": 0 }]]
     },
     "KeeperHub": {
       "ai_tool": [[{ "node": "AI Agent", "type": "ai_tool", "index": 0 }]]

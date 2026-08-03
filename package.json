@@ -44,7 +44,8 @@
       "dist/credentials/KeeperHubApi.credentials.js"
     ],
     "nodes": [
-      "dist/nodes/KeeperHub/KeeperHub.node.js"
+      "dist/nodes/KeeperHub/KeeperHub.node.js",
+      "dist/nodes/KeeperHub/KeeperHubTrigger.node.js"
     ]
   },
   "publishConfig": {

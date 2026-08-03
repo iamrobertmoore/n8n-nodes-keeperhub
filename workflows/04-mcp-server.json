@@ -1,0 +1,71 @@
+{
+  "name": "KeeperHub — Agent via MCP Server",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "d4000000-0000-4000-8000-000000000001",
+      "name": "When chat message received",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [-300, 300],
+      "webhookId": "d4000000-0000-4000-8000-0000000000ff"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You have access to KeeperHub's hosted MCP server, which exposes its workflow and execution tools directly. Use it to inspect workflows, inspect executions, and report what you find. Prefer read-only tools unless the user explicitly asks you to execute something. Stay on testnets."
+        }
+      },
+      "id": "d4000000-0000-4000-8000-000000000002",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [-40, 300]
+    },
+    {
+      "parameters": {
+        "model": "claude-sonnet-5",
+        "options": {}
+      },
+      "id": "d4000000-0000-4000-8000-000000000003",
+      "name": "Anthropic Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.5,
+      "position": [-120, 540],
+      "credentials": {
+        "anthropicApi": {
+          "id": "REPLACE_WITH_YOUR_CREDENTIAL_ID",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "endpointUrl": "https://app.keeperhub.com/mcp",
+        "serverTransport": "httpStreamable",
+        "authentication": "bearerAuth",
+        "options": {}
+      },
+      "id": "d4000000-0000-4000-8000-000000000004",
+      "name": "KeeperHub MCP Server",
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1.4,
+      "position": [120, 540],
+      "notes": "KeeperHub's hosted MCP server, 30+ tools. Use a Bearer Auth credential holding your kh_ key."
+    }
+  ],
+  "connections": {
+    "When chat message received": {
+      "main": [[{ "node": "AI Agent", "type": "main", "index": 0 }]]
+    },
+    "Anthropic Chat Model": {
+      "ai_languageModel": [[{ "node": "AI Agent", "type": "ai_languageModel", "index": 0 }]]
+    },
+    "KeeperHub MCP Server": {
+      "ai_tool": [[{ "node": "AI Agent", "type": "ai_tool", "index": 0 }]]
+    }
+  },
+  "settings": { "executionOrder": "v1" },
+  "pinData": {},
+  "meta": { "templateCredsSetupCompleted": false }
+}

@@ -4,6 +4,7 @@ import type {
 	IHttpRequestMethods,
 	IHttpRequestOptions,
 	ILoadOptionsFunctions,
+	IPollFunctions,
 	IDataObject,
 } from 'n8n-workflow';
 import { sleep } from 'n8n-workflow';
@@ -148,7 +149,7 @@ export interface KeeperHubResponse<T> {
  * normalisation, and records each attempt for the audit trail.
  */
 export async function keeperHubRequest<T = unknown>(
-	ctx: IExecuteFunctions | ILoadOptionsFunctions,
+	ctx: IExecuteFunctions | ILoadOptionsFunctions | IPollFunctions,
 	reqCtx: RequestContext,
 	options: KeeperHubRequestOptions,
 ): Promise<KeeperHubResponse<T>> {

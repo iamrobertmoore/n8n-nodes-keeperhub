@@ -183,6 +183,52 @@ await scenario(
 	(json) => (Array.isArray(json?.workflows) ? null : 'workflows was not an array'),
 );
 
+// 6. Trigger: first poll must adopt a baseline rather than replaying history.
+{
+	process.stdout.write('\n▸ Trigger — first poll establishes a baseline\n');
+	const { KeeperHubTrigger } = require('../dist/nodes/KeeperHub/KeeperHubTrigger.node.js');
+	const trigger = new KeeperHubTrigger();
+
+	const staticData = {};
+	const params = { workflowId: 'unknown', event: 'any', includeAuditTrail: false };
+	const ctx = {
+		...makeContext(params),
+		getMode: () => 'trigger',
+		getWorkflowStaticData: () => staticData,
+		getNodeParameter: (name, fallback) => params[name] ?? fallback,
+	};
+
+	// Point it at a real workflow so the request actually resolves.
+	const wfCtx = makeContext({});
+	const list = await wfCtx.helpers.httpRequestWithAuthentication.call(wfCtx, 'keeperHubApi', {
+		method: 'GET',
+		url: `${BASE}/workflows`,
+	});
+	params.workflowId = list.body?.[0]?.id ?? '';
+
+	try {
+		const first = await trigger.poll.call(ctx);
+		const adopted = Array.isArray(staticData.seen);
+		console.log(`  first poll returned ${first === null ? 'null' : 'items'}, baseline adopted: ${adopted}`);
+		if (first !== null || !adopted) {
+			failures++;
+			console.log('  ✗ first poll should return null and record a baseline');
+		} else {
+			// Second poll with no new executions must also stay quiet.
+			const second = await trigger.poll.call(ctx);
+			if (second !== null) {
+				failures++;
+				console.log('  ✗ second poll re-emitted existing executions');
+			} else {
+				console.log('  ✓');
+			}
+		}
+	} catch (err) {
+		failures++;
+		console.log(`  ✗ threw: ${err.message}`);
+	}
+}
+
 console.log(`\n${'-'.repeat(60)}`);
 console.log(failures === 0 ? 'All scenarios passed.' : `${failures} scenario(s) failed.`);
 process.exit(failures === 0 ? 0 : 1);

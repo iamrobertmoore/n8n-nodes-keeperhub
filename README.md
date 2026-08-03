@@ -18,8 +18,11 @@ KeeperHub already has adapters for LangChain, ElizaOS, OpenClaw and Hermes. It h
 | **Contract** | Call | Reads return synchronously; writes are submitted and confirmed |
 | **Workflow** | List / Get / Execute | Run an existing KeeperHub workflow with JSON input |
 | **Execution** | Get / Get Logs | The audit trail, as structured n8n output |
+| **KeeperHub Trigger** | Poll | Starts an n8n workflow when a KeeperHub execution finishes |
 
 Chains are loaded live from `GET /api/chains` rather than hardcoded, with testnets sorted first so a first write does not land on mainnet by accident.
+
+**It works in both directions.** The action node lets n8n drive KeeperHub; the trigger node lets a finished KeeperHub execution drive n8n — so failures can page someone, and landed transactions can be logged, without hand-rolling a polling loop. The first poll adopts current state as a baseline rather than replaying history, and terminal execution IDs are remembered so nothing fires twice.
 
 ## Reliability, on purpose
 
