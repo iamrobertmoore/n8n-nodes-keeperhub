@@ -113,7 +113,7 @@ const run = async () => {
 
 		check(
 			'NEW-1',
-			'every endpoint documented as accepting kh_ keys does so',
+			'every endpoint named in the docs resolves (see API-NOTES.md #1 for the precise reading)',
 			`${documented.length}/${documented.length} reachable with a valid kh_ key`,
 			`${documented.length - broken.length}/${documented.length} reachable\n${lines.join('\n')}`,
 			broken.length === 0,

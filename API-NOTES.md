@@ -17,28 +17,41 @@ deleting the check is very welcome.
 
 ---
 
-## 1. The documented API-key scope table doesn't match the routes
+## 1. `/api/executions` is documented but doesn't exist
 
-`docs/api/authentication` lists, under "Accepted on API keys", the endpoints that accept `kh_`
-keys. Called with a valid key holding read + write + admin scope:
+`docs/api/authentication.md` lists, under "Accepted on API keys":
 
-| Endpoint | Documented | Actual |
-|---|---|---|
-| `GET /api/executions` | accepted | **404 route not found** |
-| `GET /api/execute` | accepted | **404 route not found** |
-| `GET /api/analytics` | accepted | **404 route not found** |
-| `GET /api/billing` | accepted | **404 route not found** |
-| `GET /api/organizations` | accepted | **401 Unauthorized** |
-| `/workflows`, `/integrations`, `/projects`, `/tags`, `/public-tags`, `/chains`, `/keys`, `/address-book`, `/user` | accepted | 200 ✓ |
+> - Workflow CRUD and execution: `/api/workflows`, `/api/executions`, `/api/execute`
 
-Four of fourteen documented endpoints have no route, and one rejects a valid key. The real
-execution path is `GET /api/workflows/executions/{id}/status`. `/api/executions`, the name the
-docs use, doesn't exist.
+`/api/executions` returns 404. So does every sub-path I tried (`/api/executions/{id}`,
+`/api/executions/{id}/status`). There is no route there at all.
 
-This cost me more time than it should have, because the authentication page is exactly where you
-go to find out what your key can do.
+The real paths are:
 
-Suggested fix: generate the scope table from the router.
+| What you want | Actual route |
+|---|---|
+| A workflow's execution history | `GET /api/workflows/{workflowId}/executions` |
+| One workflow execution | `GET /api/workflows/executions/{executionId}/status` |
+| One direct execution | `GET /api/execute/{executionId}/status` |
+
+This is the one that cost me real time, because the authentication page is where you go to find
+out what your key can do, and `/api/executions` is exactly the path you'd guess from REST
+convention anyway.
+
+Two smaller notes on the same list, stated precisely because the first draft of these notes
+overstated them:
+
+- **`/api/execute` on its own 404s**, but `/api/execute/transfer`, `/api/execute/contract-call`
+  and `/api/execute/{id}/status` all work. Read as a prefix rather than an endpoint, the docs are
+  fine.
+- **`GET /api/organizations` returns 401 to a valid `kh_` key**, while the list says organization
+  management is accepted. `/api/organizations/{id}` does exist (GET returns 405), so this looks
+  like the collection route specifically, not organization management as a whole.
+- **`/api/analytics` and `/api/billing` don't exist** as routes. The docs only mention
+  "organization-scoped billing and analytics" in prose, never as paths, so this isn't really a
+  contradiction, just a dead end if you go looking.
+
+Suggested fix: correct the `/api/executions` bullet. I've opened a PR for it.
 
 ## 2. A simulation that completes returns HTTP 400
 
