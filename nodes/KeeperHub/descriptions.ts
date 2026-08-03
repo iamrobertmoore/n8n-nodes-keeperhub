@@ -107,13 +107,46 @@ export const description: INodeProperties[] = [
 
 	// ---- Transfer ---------------------------------------------------------
 	{
+		displayName: 'Recipient',
+		name: 'recipientMode',
+		type: 'options',
+		default: 'address',
+		displayOptions: { show: { resource: ['transfer'] } },
+		options: [
+			{
+				name: 'Address Book Entry',
+				value: 'addressBook',
+				description:
+					'Pick a saved recipient by name. Safest for AI agents — they never handle raw hex.',
+			},
+			{
+				name: 'Address',
+				value: 'address',
+				description: 'Enter a 0x address directly',
+			},
+		],
+		description:
+			'Where to send. Choosing from the address book means the address is resolved by KeeperHub rather than typed or generated.',
+	},
+	{
+		displayName: 'Recipient Name or ID',
+		name: 'addressBookEntry',
+		type: 'options',
+		typeOptions: { loadOptionsMethod: 'getAddressBook' },
+		required: true,
+		default: '',
+		displayOptions: { show: { resource: ['transfer'], recipientMode: ['addressBook'] } },
+		description:
+			'Saved recipient from your KeeperHub address book, matched by label. Choose from the list, or specify a label using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
+	},
+	{
 		displayName: 'Recipient Address',
 		name: 'recipientAddress',
 		type: 'string',
 		required: true,
 		default: '',
 		placeholder: '0x...',
-		displayOptions: { show: { resource: ['transfer'] } },
+		displayOptions: { show: { resource: ['transfer'], recipientMode: ['address'] } },
 		description: 'Address to send to',
 	},
 	{

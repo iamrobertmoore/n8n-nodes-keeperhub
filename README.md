@@ -38,7 +38,11 @@ Moving value onchain from an automation tool is not a normal HTTP call. It can f
 
 **One error shape.** KeeperHub returns at least three different error envelopes from the same API — structured `{error, detail, request_id, hint}` on some routes, bare `{"error":"Unauthorized"}` on others, and a third shape for unknown routes. `normaliseError()` flattens all three into one type, so an n8n user sees a consistent error regardless of which route they hit.
 
-**Addresses are validated here, not by the caller.** Models tokenise text and cannot count characters reliably — asked to check an address, an LLM will sometimes insist a valid one is the wrong length and refuse to proceed. The node checks deterministically and returns an unambiguous error naming the actual problem, so an agent can pass addresses straight through.
+**Agents pick recipients by name, not by hex.** Set *Recipient* to **Address Book Entry** and the node resolves a saved KeeperHub address-book label to an address. An LLM only ever has to produce something like `Org Wallet`.
+
+This is not a nicety. Models tokenise text, so they cannot count characters — asked to sanity-check a valid address, one refused a transfer because it was "one character too long", then in the next sentence gave two different character counts for the same string. No prompt wording fixes that reliably; removing hex from the model's job does. It also means the agent can only send to recipients you have explicitly saved, which is a useful blast radius on its own.
+
+Direct addresses are still supported, and are validated in the node with a clear error naming the actual problem rather than a generic rejection.
 
 ## Credential
 

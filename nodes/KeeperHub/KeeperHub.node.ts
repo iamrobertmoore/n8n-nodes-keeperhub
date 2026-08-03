@@ -78,6 +78,28 @@ export class KeeperHub implements INodeType {
 				});
 			},
 
+			/**
+			 * Values are labels rather than addresses, so an AI agent filling this
+			 * field with $fromAI supplies a name it can actually get right.
+			 */
+			async getAddressBook(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+				const reqCtx = newRequestContext();
+				const res = await keeperHubRequest<
+					Array<{ label?: string; address?: string }> | { data?: Array<{ label?: string; address?: string }> }
+				>(this, reqCtx, { method: 'GET', path: '/address-book' });
+
+				const raw = res.body;
+				const entries = Array.isArray(raw) ? raw : (raw?.data ?? []);
+
+				return entries
+					.filter((e) => e.label && e.address)
+					.map((e) => ({
+						name: e.label as string,
+						value: e.label as string,
+						description: `${(e.address as string).slice(0, 8)}…${(e.address as string).slice(-6)}`,
+					}));
+			},
+
 			async getWorkflows(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
 				const reqCtx = newRequestContext();
 				const res = await keeperHubRequest<Array<{ id: string; name?: string }>>(this, reqCtx, {
@@ -143,6 +165,60 @@ export class KeeperHub implements INodeType {
 
 		return [returnData];
 	}
+}
+
+interface AddressBookEntry {
+	id?: string;
+	label?: string;
+	address?: string;
+}
+
+/**
+ * Resolves a saved recipient by label, so an LLM only ever has to produce a
+ * human name — never 40 hex characters it cannot verify and, empirically,
+ * cannot even count. Matching is case- and whitespace-insensitive; an
+ * unrecognised label fails loudly and lists what is available rather than
+ * guessing at the closest match.
+ */
+async function resolveAddressBookEntry(
+	this: IExecuteFunctions,
+	label: string,
+	reqCtx: ReturnType<typeof newRequestContext>,
+	itemIndex: number,
+): Promise<string> {
+	if (!label) {
+		throw new NodeOperationError(this.getNode(), 'No address book entry selected', { itemIndex });
+	}
+
+	const res = await keeperHubRequest<AddressBookEntry[] | { data?: AddressBookEntry[] }>(
+		this,
+		reqCtx,
+		{ method: 'GET', path: '/address-book' },
+	);
+
+	const raw = res.body;
+	const entries: AddressBookEntry[] = Array.isArray(raw) ? raw : (raw?.data ?? []);
+	const wanted = label.trim().toLowerCase();
+
+	const match = entries.find(
+		(e) => (e.label ?? '').trim().toLowerCase() === wanted || (e.id ?? '') === label.trim(),
+	);
+
+	if (!match?.address) {
+		const available = entries.map((e) => e.label).filter(Boolean);
+		throw new NodeOperationError(
+			this.getNode(),
+			`No address book entry named "${label}"`,
+			{
+				itemIndex,
+				description: available.length
+					? `Available entries: ${available.join(', ')}. Add more at app.keeperhub.com.`
+					: 'Your KeeperHub address book is empty. Add a recipient at app.keeperhub.com first.',
+			},
+		);
+	}
+
+	return assertAddress.call(this, match.address, `Address book entry "${match.label}"`, itemIndex);
 }
 
 const ADDRESS_RE = /^0x[0-9a-fA-F]{40}$/;
@@ -211,14 +287,23 @@ async function runDirectWrite(
 
 	const chainId = this.getNodeParameter('chainId', i) as number;
 	const payload: IDataObject = { chainId, network: String(chainId) };
+	let resolvedFrom: string | undefined;
 
 	if (kind === 'transfer') {
-		payload.recipientAddress = assertAddress.call(
-			this,
-			this.getNodeParameter('recipientAddress', i) as string,
-			'Recipient Address',
-			i,
-		);
+		const recipientMode = this.getNodeParameter('recipientMode', i, 'address') as string;
+
+		if (recipientMode === 'addressBook') {
+			const entry = String(this.getNodeParameter('addressBookEntry', i, '')).trim();
+			payload.recipientAddress = await resolveAddressBookEntry.call(this, entry, reqCtx, i);
+			resolvedFrom = entry;
+		} else {
+			payload.recipientAddress = assertAddress.call(
+				this,
+				this.getNodeParameter('recipientAddress', i) as string,
+				'Recipient Address',
+				i,
+			);
+		}
 		payload.amount = String(this.getNodeParameter('amount', i));
 		const tokenAddress = this.getNodeParameter('tokenAddress', i, '') as string;
 		if (tokenAddress) {
@@ -246,6 +331,10 @@ async function runDirectWrite(
 
 	const path = `/execute/${kind}`;
 	const result: IDataObject = { chainId, operation: kind };
+	if (resolvedFrom !== undefined) {
+		result.recipientLabel = resolvedFrom;
+		result.recipientAddress = payload.recipientAddress;
+	}
 
 	// --- 1. Simulate -------------------------------------------------------
 	const simulateFirst = options.simulateFirst !== false;

@@ -7,20 +7,26 @@
       "name": "When chat message received",
       "type": "@n8n/n8n-nodes-langchain.chatTrigger",
       "typeVersion": 1.4,
-      "position": [-300, 300],
+      "position": [
+        -300,
+        300
+      ],
       "webhookId": "b2000000-0000-4000-8000-0000000000ff"
     },
     {
       "parameters": {
         "options": {
-          "systemMessage": "You are a treasury operator with the ability to move funds onchain through the KeeperHub tool.\n\nRules:\n- Only ever use chain 11155111 (Ethereum Sepolia). Never mainnet.\n- Keep any single transfer at or below 0.001 ETH.\n- The tool simulates every transfer before submitting it. If it reports that a transfer would revert, do not retry the same amount — work out something the wallet can afford and try that instead.\n- Always report the resulting transaction link back to the user.\n- Pass addresses through EXACTLY as the user typed them. Do not try to validate, reformat, checksum or count the characters in an address — you cannot count characters reliably, and the tool validates addresses itself and will return a precise error if one is genuinely malformed. Never refuse a transfer on the grounds that an address 'looks the wrong length'."
+          "systemMessage": "You are a treasury operator. You can move funds onchain through the KeeperHub tool.\n\nRules:\n- Only ever use chain 11155111 (Ethereum Sepolia). Never mainnet.\n- Keep any single transfer at or below 0.001 ETH.\n- Recipients are chosen by NAME from the KeeperHub address book, not by hex address. Pass the name the user gives you straight through. You never need to see, check or reproduce a 0x address — the tool resolves the name to an address itself, and will tell you which names exist if you get one wrong.\n- If the user pastes a raw 0x address, explain that recipients must first be saved to the KeeperHub address book, and offer to proceed with a saved recipient instead.\n- The tool simulates every transfer before submitting. If it reports that a transfer would revert, do not retry the same amount — work out something the wallet can afford.\n- Always report the resulting transaction link back to the user."
         }
       },
       "id": "b2000000-0000-4000-8000-000000000002",
       "name": "AI Agent",
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3.1,
-      "position": [-40, 300]
+      "position": [
+        -40,
+        300
+      ]
     },
     {
       "parameters": {
@@ -31,7 +37,10 @@
       "name": "Anthropic Chat Model",
       "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
       "typeVersion": 1.5,
-      "position": [-120, 540],
+      "position": [
+        -120,
+        540
+      ],
       "credentials": {
         "anthropicApi": {
           "id": "REPLACE_WITH_YOUR_CREDENTIAL_ID",
@@ -44,25 +53,29 @@
         "resource": "transfer",
         "operation": "send",
         "chainId": 11155111,
-        "recipientAddress": "={{ $fromAI('recipientAddress', 'The 0x address to send funds to', 'string') }}",
         "amount": "={{ $fromAI('amount', 'Human-readable amount of ETH to send, for example 0.0001', 'string') }}",
         "tokenAddress": "",
         "options": {},
         "descriptionType": "manual",
-        "toolDescription": "Send ETH on Ethereum Sepolia through KeeperHub. Pass the recipient address through verbatim; this tool validates it. Simulates the transfer first and refuses to submit anything that would revert, submits with an idempotency key so it cannot double-send, then waits for confirmation and returns the transaction hash and link."
+        "toolDescription": "Send ETH on Ethereum Sepolia through KeeperHub. The recipient is given by NAME from the KeeperHub address book — you never handle a hex address. Simulates the transfer first and refuses to submit anything that would revert, submits with an idempotency key so it cannot double-send, then waits for confirmation and returns the transaction hash and link.",
+        "recipientMode": "addressBook",
+        "addressBookEntry": "={{ $fromAI('recipient', 'The NAME of the saved recipient in the KeeperHub address book, for example \"Org Wallet\". Never a 0x address.', 'string') }}"
       },
       "id": "b2000000-0000-4000-8000-000000000004",
       "name": "KeeperHub",
       "type": "n8n-nodes-keeperhub.keeperHubTool",
       "typeVersion": 1,
-      "position": [140, 540],
+      "position": [
+        140,
+        540
+      ],
       "credentials": {
         "keeperHubApi": {
           "id": "REPLACE_WITH_YOUR_CREDENTIAL_ID",
           "name": "KeeperHub account"
         }
       },
-      "notes": "The safety sequence lives in the node, not the prompt — so the agent cannot skip it."
+      "notes": "Recipient resolved from the address book by name, so the agent never handles hex. The safety sequence lives in the node, not the prompt."
     },
     {
       "parameters": {},
@@ -70,25 +83,64 @@
       "name": "Simple Memory",
       "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
       "typeVersion": 1.3,
-      "position": [0, 540],
+      "position": [
+        0,
+        540
+      ],
       "notes": "So the agent remembers the first attempt when it recalculates after a refused transfer."
     }
   ],
   "connections": {
     "When chat message received": {
-      "main": [[{ "node": "AI Agent", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Anthropic Chat Model": {
-      "ai_languageModel": [[{ "node": "AI Agent", "type": "ai_languageModel", "index": 0 }]]
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Simple Memory": {
-      "ai_memory": [[{ "node": "AI Agent", "type": "ai_memory", "index": 0 }]]
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
     },
     "KeeperHub": {
-      "ai_tool": [[{ "node": "AI Agent", "type": "ai_tool", "index": 0 }]]
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
-  "settings": { "executionOrder": "v1" },
+  "settings": {
+    "executionOrder": "v1"
+  },
   "pinData": {},
-  "meta": { "templateCredsSetupCompleted": false }
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
 }
