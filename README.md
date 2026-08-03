@@ -38,6 +38,8 @@ Moving value onchain from an automation tool is not a normal HTTP call. It can f
 
 **One error shape.** KeeperHub returns at least three different error envelopes from the same API — structured `{error, detail, request_id, hint}` on some routes, bare `{"error":"Unauthorized"}` on others, and a third shape for unknown routes. `normaliseError()` flattens all three into one type, so an n8n user sees a consistent error regardless of which route they hit.
 
+**Addresses are validated here, not by the caller.** Models tokenise text and cannot count characters reliably — asked to check an address, an LLM will sometimes insist a valid one is the wrong length and refuse to proceed. The node checks deterministically and returns an unambiguous error naming the actual problem, so an agent can pass addresses straight through.
+
 ## Credential
 
 Organization-scoped key only (`kh_…`), created at `app.keeperhub.com` → API Keys. User-scoped `wfb_` keys authenticate webhook triggers and will not work here.

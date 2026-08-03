@@ -145,6 +145,49 @@ export class KeeperHub implements INodeType {
 	}
 }
 
+const ADDRESS_RE = /^0x[0-9a-fA-F]{40}$/;
+
+/**
+ * Validates an EVM address in the node rather than leaving it to the caller.
+ *
+ * This matters most when the caller is an LLM. Models tokenise text, so they
+ * cannot reliably count the characters in an address — asked to sanity-check
+ * one, they will sometimes insist a perfectly valid address is the wrong
+ * length and refuse to proceed. Doing the check here, deterministically, means
+ * the agent never has to guess: it passes the address through and gets either
+ * an execution or an unambiguous error naming the actual problem.
+ */
+function assertAddress(
+	this: IExecuteFunctions,
+	value: string,
+	field: string,
+	itemIndex: number,
+): string {
+	const trimmed = (value ?? '').trim();
+
+	if (!trimmed) {
+		throw new NodeOperationError(this.getNode(), `${field} is empty`, { itemIndex });
+	}
+	if (!trimmed.startsWith('0x')) {
+		throw new NodeOperationError(this.getNode(), `${field} must start with "0x"`, {
+			itemIndex,
+			description: `Received: ${trimmed}`,
+		});
+	}
+	if (!ADDRESS_RE.test(trimmed)) {
+		const body = trimmed.slice(2);
+		const reason = /^[0-9a-fA-F]*$/.test(body)
+			? `it has ${body.length} hex characters after "0x", and an EVM address needs exactly 40`
+			: 'it contains characters that are not hexadecimal';
+		throw new NodeOperationError(this.getNode(), `${field} is not a valid EVM address`, {
+			itemIndex,
+			description: `${trimmed} — ${reason}.`,
+		});
+	}
+
+	return trimmed;
+}
+
 /**
  * The documented Safe First-Write Sequence, implemented once:
  *
@@ -170,12 +213,24 @@ async function runDirectWrite(
 	const payload: IDataObject = { chainId, network: String(chainId) };
 
 	if (kind === 'transfer') {
-		payload.recipientAddress = this.getNodeParameter('recipientAddress', i) as string;
+		payload.recipientAddress = assertAddress.call(
+			this,
+			this.getNodeParameter('recipientAddress', i) as string,
+			'Recipient Address',
+			i,
+		);
 		payload.amount = String(this.getNodeParameter('amount', i));
 		const tokenAddress = this.getNodeParameter('tokenAddress', i, '') as string;
-		if (tokenAddress) payload.tokenAddress = tokenAddress;
+		if (tokenAddress) {
+			payload.tokenAddress = assertAddress.call(this, tokenAddress, 'Token Address', i);
+		}
 	} else {
-		payload.contractAddress = this.getNodeParameter('contractAddress', i) as string;
+		payload.contractAddress = assertAddress.call(
+			this,
+			this.getNodeParameter('contractAddress', i) as string,
+			'Contract Address',
+			i,
+		);
 		payload.functionName = this.getNodeParameter('functionName', i) as string;
 		const functionArgs = this.getNodeParameter('functionArgs', i, '') as string;
 		if (functionArgs) payload.functionArgs = functionArgs;

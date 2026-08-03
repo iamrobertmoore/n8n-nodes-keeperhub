@@ -13,7 +13,7 @@
     {
       "parameters": {
         "options": {
-          "systemMessage": "You have access to KeeperHub's hosted MCP server, which exposes its workflow and execution tools directly. Use it to inspect workflows, inspect executions, and report what you find. Prefer read-only tools unless the user explicitly asks you to execute something. Stay on testnets."
+          "systemMessage": "You have access to KeeperHub's hosted MCP server, which exposes its workflow and execution tools directly. Use it to inspect workflows, inspect executions, and report what you find. Prefer read-only tools unless the user explicitly asks you to execute something. Stay on testnets. Pass any address through exactly as given — do not attempt to validate or count its characters."
         }
       },
       "id": "d4000000-0000-4000-8000-000000000002",

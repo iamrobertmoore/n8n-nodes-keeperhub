@@ -55,3 +55,23 @@ test('non-string error field is stringified, not [object Object]', () => {
 	assert.equal(e.envelope, 'bare');
 	assert.match(e.message, /insufficient/);
 });
+
+// --- address validation -----------------------------------------------
+// Regression guard for the case that prompted it: a valid mixed-case address
+// that an LLM insisted was the wrong length.
+const ADDRESS_RE = /^0x[0-9a-fA-F]{40}$/;
+
+test('a real mixed-case address is accepted', () => {
+	assert.ok(ADDRESS_RE.test('0xE24E20d74728047d8fa9B30aEad20F7075FCb89f'));
+});
+
+test('the burn address is accepted', () => {
+	assert.ok(ADDRESS_RE.test('0x000000000000000000000000000000000000dEaD'));
+});
+
+test('too short, too long and non-hex are all rejected', () => {
+	assert.ok(!ADDRESS_RE.test('0xE24E20d74728047d8fa9B30aEad20F7075FCb89'));
+	assert.ok(!ADDRESS_RE.test('0xE24E20d74728047d8fa9B30aEad20F7075FCb89ff'));
+	assert.ok(!ADDRESS_RE.test('0xZZ4E20d74728047d8fa9B30aEad20F7075FCb89f'));
+	assert.ok(!ADDRESS_RE.test('E24E20d74728047d8fa9B30aEad20F7075FCb89f'));
+});
