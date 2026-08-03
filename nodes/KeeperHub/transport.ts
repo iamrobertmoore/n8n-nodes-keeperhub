@@ -261,7 +261,7 @@ export class KeeperHubApiError extends Error {
 		if (normalised.detail) parts.push(normalised.detail);
 		if (normalised.hint) parts.push(`Hint: ${normalised.hint}`);
 		if (normalised.requestId) parts.push(`(request_id ${normalised.requestId})`);
-		super(parts.join(' — '));
+		super(parts.join(', '));
 		this.name = 'KeeperHubApiError';
 		this.normalised = normalised;
 	}

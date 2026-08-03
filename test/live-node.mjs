@@ -2,8 +2,8 @@
 /**
  * Exercises the built node against the live KeeperHub API without needing an
  * n8n instance, by stubbing the slice of IExecuteFunctions the node actually
- * uses. Proves the node's own logic — simulate gate, idempotency, polling,
- * attempt log, error normalisation — not just the transport helpers.
+ * uses. Proves the node's own logic, simulate gate, idempotency, polling,
+ * attempt log, error normalisation, not just the transport helpers.
  *
  *   KEEPERHUB_API_KEY=kh_... node --experimental-strip-types test/live-node.mjs
  *   (or: npm run build && node test/live-node.mjs)
@@ -101,7 +101,7 @@ async function scenario(title, params, assert, opts) {
 
 // 1. Happy path: simulate -> execute -> poll -> transaction hash.
 await scenario(
-	'Transfer 0.0001 SepoliaETH — full safe-write sequence',
+	'Transfer 0.0001 SepoliaETH, full safe-write sequence',
 	{
 		resource: 'transfer',
 		operation: 'send',
@@ -124,7 +124,7 @@ await scenario(
 
 // 2. Simulation gate: an impossible amount must never reach the chain.
 await scenario(
-	'Transfer 999 ETH — simulation must abort before submitting',
+	'Transfer 999 ETH, simulation must abort before submitting',
 	{
 		resource: 'transfer',
 		operation: 'send',
@@ -142,7 +142,7 @@ await scenario(
 
 // 3. continueOnFail: the same failure must surface as data, not an exception.
 await scenario(
-	'Transfer 999 ETH with continueOnFail — error returned as data',
+	'Transfer 999 ETH with continueOnFail, error returned as data',
 	{
 		resource: 'transfer',
 		operation: 'send',
@@ -185,7 +185,7 @@ await scenario(
 
 // 6. Trigger: first poll must adopt a baseline rather than replaying history.
 {
-	process.stdout.write('\n▸ Trigger — first poll establishes a baseline\n');
+	process.stdout.write('\n▸ Trigger, first poll establishes a baseline\n');
 	const { KeeperHubTrigger } = require('../dist/nodes/KeeperHub/KeeperHubTrigger.node.js');
 	const trigger = new KeeperHubTrigger();
 

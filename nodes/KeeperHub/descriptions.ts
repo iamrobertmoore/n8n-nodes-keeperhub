@@ -117,7 +117,7 @@ export const description: INodeProperties[] = [
 				name: 'Address Book Entry',
 				value: 'addressBook',
 				description:
-					'Pick a saved recipient by name. Safest for AI agents — they never handle raw hex.',
+					'Pick a saved recipient by name. Safest for AI agents, they never handle raw hex.',
 			},
 			{
 				name: 'Address',

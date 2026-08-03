@@ -1,9 +1,15 @@
 {
-  "name": "KeeperHub — React to Executions (Trigger)",
+  "name": "KeeperHub: React to Executions (Trigger)",
   "nodes": [
     {
       "parameters": {
-        "pollTimes": { "item": [{ "mode": "everyMinute" }] },
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
         "workflowId": "REPLACE_WITH_A_KEEPERHUB_WORKFLOW_ID",
         "event": "any",
         "includeAuditTrail": true
@@ -12,7 +18,10 @@
       "name": "KeeperHub Trigger",
       "type": "n8n-nodes-keeperhub.keeperHubTrigger",
       "typeVersion": 1,
-      "position": [-260, 300],
+      "position": [
+        -260,
+        300
+      ],
       "credentials": {
         "keeperHubApi": {
           "id": "REPLACE_WITH_YOUR_CREDENTIAL_ID",
@@ -24,18 +33,27 @@
     {
       "parameters": {
         "conditions": {
-          "options": { "caseSensitive": true, "version": 2 },
+          "options": {
+            "caseSensitive": true,
+            "version": 2
+          },
           "combinator": "or",
           "conditions": [
             {
               "id": "c3-cond-1",
-              "operator": { "type": "string", "operation": "equals" },
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
               "leftValue": "={{ $json.status }}",
               "rightValue": "failed"
             },
             {
               "id": "c3-cond-2",
-              "operator": { "type": "string", "operation": "equals" },
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
               "leftValue": "={{ $json.status }}",
               "rightValue": "error"
             }
@@ -47,7 +65,10 @@
       "name": "Did it fail?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
-      "position": [-20, 300]
+      "position": [
+        -20,
+        300
+      ]
     },
     {
       "parameters": {
@@ -57,31 +78,61 @@
       "name": "Raise an alert",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [240, 200]
+      "position": [
+        240,
+        200
+      ]
     },
     {
       "parameters": {
-        "jsCode": "// Landed cleanly. Record the receipt — transaction, real gas cost, timing.\nreturn $input.all().map(item => ({\n  json: {\n    executionId: item.json.executionId ?? item.json.id,\n    transactionLink: item.json.transactionLink,\n    gasUsedUnits: item.json.gasUsedUnits,\n    effectiveGasPriceWei: item.json.effectiveGasPriceWei,\n    gasCostWei: item.json.gasCostWei,\n    completedAt: item.json.completedAt\n  }\n}));"
+        "jsCode": "// Landed cleanly. Record the receipt, transaction, real gas cost, timing.\nreturn $input.all().map(item => ({\n  json: {\n    executionId: item.json.executionId ?? item.json.id,\n    transactionLink: item.json.transactionLink,\n    gasUsedUnits: item.json.gasUsedUnits,\n    effectiveGasPriceWei: item.json.effectiveGasPriceWei,\n    gasCostWei: item.json.gasCostWei,\n    completedAt: item.json.completedAt\n  }\n}));"
       },
       "id": "c3000000-0000-4000-8000-000000000004",
       "name": "Log the receipt",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [240, 400]
+      "position": [
+        240,
+        400
+      ]
     }
   ],
   "connections": {
     "KeeperHub Trigger": {
-      "main": [[{ "node": "Did it fail?", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Did it fail?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Did it fail?": {
       "main": [
-        [{ "node": "Raise an alert", "type": "main", "index": 0 }],
-        [{ "node": "Log the receipt", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Raise an alert",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log the receipt",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     }
   },
-  "settings": { "executionOrder": "v1" },
+  "settings": {
+    "executionOrder": "v1"
+  },
   "pinData": {},
-  "meta": { "templateCredsSetupCompleted": false }
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
 }

@@ -1,7 +1,7 @@
 {
   "name": "n8n-nodes-keeperhub",
   "version": "0.3.0",
-  "description": "Execute onchain transactions from n8n via KeeperHub — simulate-first, idempotent, with retries, gas handling and a full audit trail. Usable as an AI Agent tool.",
+  "description": "Execute onchain transactions from n8n via KeeperHub, simulate-first, idempotent, with retries, gas handling and a full audit trail. Usable as an AI Agent tool.",
   "keywords": [
     "n8n-community-node-package",
     "keeperhub",

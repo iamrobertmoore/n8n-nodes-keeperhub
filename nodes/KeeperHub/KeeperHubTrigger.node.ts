@@ -25,8 +25,8 @@ interface ExecutionSummary extends IDataObject {
  * Makes the integration two-way.
  *
  * Without this, n8n can tell KeeperHub to do things but never hears back, so
- * anything reactive — alert me when an execution fails, log every landed
- * transaction, escalate a run that reverted — has to be built as a polling loop
+ * anything reactive, alert me when an execution fails, log every landed
+ * transaction, escalate a run that reverted, has to be built as a polling loop
  * by hand. KeeperHub emits no outbound webhook we can subscribe to, so this
  * polls the executions endpoint and does the bookkeeping once, properly.
  */

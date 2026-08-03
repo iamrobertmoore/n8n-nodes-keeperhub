@@ -3,7 +3,7 @@
  *
  * n8n's verification guidelines forbid runtime dependencies, so this node
  * cannot import @keeperhub/sdk at runtime. Instead the SDK is a devDependency
- * and this file asserts — at `npm run typecheck` time — that our local mirrors
+ * and this file asserts, at `npm run typecheck` time, that our local mirrors
  * of the REST contract stay assignable to KeeperHub's official types.
  *
  * If KeeperHub changes their contract in a way that breaks us, CI fails here

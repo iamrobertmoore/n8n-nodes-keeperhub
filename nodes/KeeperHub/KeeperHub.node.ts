@@ -44,7 +44,7 @@ export class KeeperHub implements INodeType {
 			 * Chains come from the live API rather than a hardcoded list: the docs
 			 * list 9, the API returns 22. Testnets are listed first because a first
 			 * write should not land on mainnet by accident. Solana entries are
-			 * filtered out — their chainId (101/103) is not an EVM chain id and the
+			 * filtered out, their chainId (101/103) is not an EVM chain id and the
 			 * direct-execution endpoints this node uses are EVM-shaped.
 			 */
 			async getChains(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
@@ -68,7 +68,7 @@ export class KeeperHub implements INodeType {
 				return sorted.map((c) => {
 					const notes = [`Chain ID ${c.chainId}`];
 					if (c.symbol) notes.push(c.symbol);
-					notes.push(c.isTestnet ? 'testnet' : 'MAINNET — real funds');
+					notes.push(c.isTestnet ? 'testnet' : 'MAINNET, real funds');
 					if (c.usePrivateMempoolRpc) notes.push('private mempool (MEV protected)');
 					return {
 						name: `${c.name ?? c.chainId}${c.isTestnet ? ' (testnet)' : ''}`,
@@ -96,7 +96,7 @@ export class KeeperHub implements INodeType {
 					.map((e) => ({
 						name: e.label as string,
 						value: e.label as string,
-						description: `${(e.address as string).slice(0, 8)}…${(e.address as string).slice(-6)}`,
+						description: `${(e.address as string).slice(0, 8)}...${(e.address as string).slice(-6)}`,
 					}));
 			},
 
@@ -149,7 +149,7 @@ export class KeeperHub implements INodeType {
 				// `continueOnFail()` is true for BOTH "continue (using error output)" and
 				// "continue (using regular output)", so it cannot tell us which branch the
 				// user wants. What routes an item to the error output is the `error`
-				// property on INodeExecutionData — without it the engine sees a clean
+				// property on INodeExecutionData, without it the engine sees a clean
 				// return and sends everything down output 0.
 				if (this.continueOnFail()) {
 					const json: IDataObject = { error: (error as Error).message };
@@ -175,7 +175,7 @@ interface AddressBookEntry {
 
 /**
  * Resolves a saved recipient by label, so an LLM only ever has to produce a
- * human name — never 40 hex characters it cannot verify and, empirically,
+ * human name, never 40 hex characters it cannot verify and, empirically,
  * cannot even count. Matching is case- and whitespace-insensitive; an
  * unrecognised label fails loudly and lists what is available rather than
  * guessing at the closest match.
@@ -227,7 +227,7 @@ const ADDRESS_RE = /^0x[0-9a-fA-F]{40}$/;
  * Validates an EVM address in the node rather than leaving it to the caller.
  *
  * This matters most when the caller is an LLM. Models tokenise text, so they
- * cannot reliably count the characters in an address — asked to sanity-check
+ * cannot reliably count the characters in an address, asked to sanity-check
  * one, they will sometimes insist a perfectly valid address is the wrong
  * length and refuse to proceed. Doing the check here, deterministically, means
  * the agent never has to guess: it passes the address through and gets either
@@ -257,7 +257,7 @@ function assertAddress(
 			: 'it contains characters that are not hexadecimal';
 		throw new NodeOperationError(this.getNode(), `${field} is not a valid EVM address`, {
 			itemIndex,
-			description: `${trimmed} — ${reason}.`,
+			description: `${trimmed}, ${reason}.`,
 		});
 	}
 
@@ -417,7 +417,7 @@ async function runDirectWrite(
 		if (final.transactionLink) result.transactionLink = final.transactionLink;
 		if (final.error) result.executionError = final.error;
 
-		// KeeperHub's `gasUsedWei` is byte-identical to `result.gasUsedUnits` — it is a
+		// KeeperHub's `gasUsedWei` is byte-identical to `result.gasUsedUnits`, it is a
 		// gas *unit count*, not a wei amount, so using it as a cost understates spend by
 		// ~9 orders of magnitude. We surface both under honest names and compute the
 		// real cost, so nobody builds a spending cap on the mislabelled field.

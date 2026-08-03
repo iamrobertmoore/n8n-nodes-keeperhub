@@ -1,5 +1,5 @@
 {
-  "name": "KeeperHub — AI Agent Executes Onchain",
+  "name": "KeeperHub: AI Agent Executes Onchain",
   "nodes": [
     {
       "parameters": {},
@@ -16,7 +16,7 @@
     {
       "parameters": {
         "options": {
-          "systemMessage": "You are a treasury operator. You can move funds onchain through the KeeperHub tool.\n\nRules:\n- Only ever use chain 11155111 (Ethereum Sepolia). Never mainnet.\n- Keep any single transfer at or below 0.001 ETH.\n- Recipients are chosen by NAME from the KeeperHub address book, not by hex address. Pass the name the user gives you straight through. You never need to see, check or reproduce a 0x address — the tool resolves the name to an address itself, and will tell you which names exist if you get one wrong.\n- If the user pastes a raw 0x address, explain that recipients must first be saved to the KeeperHub address book, and offer to proceed with a saved recipient instead.\n- The tool simulates every transfer before submitting. If it reports that a transfer would revert, do not retry the same amount — work out something the wallet can afford.\n- Always report the resulting transaction link back to the user."
+          "systemMessage": "You are a treasury operator. You can move funds onchain through the KeeperHub tool.\n\nRules:\n- Only ever use chain 11155111 (Ethereum Sepolia). Never mainnet.\n- Keep any single transfer at or below 0.001 ETH.\n- Recipients are chosen by NAME from the KeeperHub address book, not by hex address. Pass the name the user gives you straight through. You never need to see, check or reproduce a 0x address, the tool resolves the name to an address itself, and will tell you which names exist if you get one wrong.\n- If the user pastes a raw 0x address, explain that recipients must first be saved to the KeeperHub address book, and offer to proceed with a saved recipient instead.\n- The tool simulates every transfer before submitting. If it reports that a transfer would revert, do not retry the same amount, work out something the wallet can afford.\n- Always report the resulting transaction link back to the user."
         }
       },
       "id": "b2000000-0000-4000-8000-000000000002",
@@ -57,7 +57,7 @@
         "tokenAddress": "",
         "options": {},
         "descriptionType": "manual",
-        "toolDescription": "Send ETH on Ethereum Sepolia through KeeperHub. The recipient is given by NAME from the KeeperHub address book — you never handle a hex address. Simulates the transfer first and refuses to submit anything that would revert, submits with an idempotency key so it cannot double-send, then waits for confirmation and returns the transaction hash and link.",
+        "toolDescription": "Send ETH on Ethereum Sepolia through KeeperHub. The recipient is given by NAME from the KeeperHub address book, you never handle a hex address. Simulates the transfer first and refuses to submit anything that would revert, submits with an idempotency key so it cannot double-send, then waits for confirmation and returns the transaction hash and link.",
         "recipientMode": "addressBook",
         "addressBookEntry": "={{ $fromAI('recipient', 'The NAME of the saved recipient in the KeeperHub address book, for example \"Org Wallet\". Never a 0x address.', 'string') }}"
       },

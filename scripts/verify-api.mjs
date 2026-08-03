@@ -49,7 +49,7 @@ function check(id, title, expected, actual, ok) {
 	const verdict = ok ? 'PASS' : 'FAIL';
 	if (ok) pass++;
 	else fail++;
-	console.log(`\n[${verdict}] ${id} — ${title}`);
+	console.log(`\n[${verdict}] ${id}, ${title}`);
 	console.log(`  expected: ${expected}`);
 	console.log(`  actual:   ${actual}`);
 }
@@ -59,7 +59,7 @@ function preview(v, n = 160) {
 }
 
 const run = async () => {
-	console.log(`KeeperHub API verification — ${new Date().toISOString()}`);
+	console.log(`KeeperHub API verification, ${new Date().toISOString()}`);
 	console.log(`base: ${BASE}`);
 
 	// --- NEW-3: /api/chains has no status field ---------------------------
@@ -130,7 +130,7 @@ const run = async () => {
 			'GET /workflows can distinguish a bad key from an empty account',
 			'anonymous and invalid keys are rejected with 401',
 			`anon -> ${anon.status}, invalid -> ${bad.status}, valid -> ${good.status} ` +
-				'(by design: auth required:false — see KeeperHub/cli#75)',
+				'(by design: auth required:false, see KeeperHub/cli#75)',
 			anon.status === 401 && bad.status === 401,
 		);
 
@@ -198,7 +198,7 @@ const run = async () => {
 			'NEW-2',
 			'a simulation that completes returns 2xx (400 is for malformed input)',
 			'200 with wouldRevert / revertReason',
-			`${r.status} — simulation ${completed ? 'COMPLETED and still returned ' + r.status : 'did not complete'}\n` +
+			`${r.status}, simulation ${completed ? 'COMPLETED and still returned ' + r.status : 'did not complete'}\n` +
 				`              ${preview(r.body, 260)}`,
 			completed && r.status >= 200 && r.status < 300,
 		);
@@ -226,7 +226,7 @@ const run = async () => {
 			replayHeader.length > 0,
 		);
 	} else {
-		console.log('\n(skipping simulate probes — pass --write to include them)');
+		console.log('\n(skipping simulate probes, pass --write to include them)');
 	}
 
 	console.log(`\n${'-'.repeat(60)}`);

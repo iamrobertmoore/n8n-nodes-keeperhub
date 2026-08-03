@@ -33,7 +33,7 @@ export const FAILED_STATUSES: ReadonlySet<string> = new Set(['error', 'failed', 
  *
  * Note: the Quickstart states "Each chain includes a `status` field (stable,
  * experimental, deprecated)" and calls this endpoint "the live source of
- * truth". No chain in the live response carries a `status` field at all — it
+ * truth". No chain in the live response carries a `status` field at all, it
  * is absent, not null. It is typed optional here and never relied upon.
  */
 export interface Chain {
