@@ -5,9 +5,7 @@
  * on npm for the appropriate dist-tag, and tells GitHub Actions whether this
  * push should trigger a publish.
  *
- * Mirrors bin/check-version.ts from nillionnetwork/blindfold-ts, ported to
- * plain Node/CommonJS (no tsx, no semver dependency) to match this repo's
- * existing npm/tsc-only toolchain.
+ * Plain Node/CommonJS (no tsx) to match this repo's npm/tsc-only toolchain.
  */
 
 const fs = require("node:fs");
