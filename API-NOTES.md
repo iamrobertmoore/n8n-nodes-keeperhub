@@ -51,7 +51,7 @@ overstated them:
   "organization-scoped billing and analytics" in prose, never as paths, so this isn't really a
   contradiction, just a dead end if you go looking.
 
-Suggested fix: correct the `/api/executions` bullet. I've opened a PR for it.
+Suggested fix: correct the `/api/executions` bullet. Submitted as [KeeperHub/keeperhub#1885](https://github.com/KeeperHub/keeperhub/pull/1885).
 
 ## 2. A simulation that completes returns HTTP 400
 
