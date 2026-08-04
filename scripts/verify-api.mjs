@@ -113,7 +113,9 @@ const run = async () => {
 
 		check(
 			'NEW-1',
-			'every endpoint named in the docs resolves (see API-NOTES.md #1 for the precise reading)',
+			'every endpoint named in the docs resolves. NOTE: fixed upstream in KeeperHub/keeperhub#1885; ' +
+				'this probe is GET-only and will not see POST-only routes such as ' +
+				'/api/executions/{id}/cancel',
 			`${documented.length}/${documented.length} reachable with a valid kh_ key`,
 			`${documented.length - broken.length}/${documented.length} reachable\n${lines.join('\n')}`,
 			broken.length === 0,

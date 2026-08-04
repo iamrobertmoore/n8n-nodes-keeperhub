@@ -17,41 +17,48 @@ deleting the check is very welcome.
 
 ---
 
-## 1. `/api/executions` is documented but doesn't exist
+## 1. `/api/executions` was a docs slug, not a route (merged upstream)
 
-`docs/api/authentication.md` lists, under "Accepted on API keys":
+**Status: fixed. [KeeperHub/keeperhub#1885](https://github.com/KeeperHub/keeperhub/pull/1885)
+merged 2026-08-03**, and it turned up a real auth bug that KeeperHub then fixed separately in
+[#1905](https://github.com/KeeperHub/keeperhub/pull/1905). Kept here with corrections, because two
+of my original claims were wrong and the reason is instructive.
+
+`docs/api/authentication.md` listed, under "Accepted on API keys":
 
 > - Workflow CRUD and execution: `/api/workflows`, `/api/executions`, `/api/execute`
 
-`/api/executions` returns 404. So does every sub-path I tried (`/api/executions/{id}`,
-`/api/executions/{id}/status`). There is no route there at all.
+`GET /api/executions` returned 404, as did the sub-paths I tried. The real routes are
+`GET /api/workflows/{workflowId}/executions`, `GET /api/workflows/executions/{executionId}/status`,
+and `GET /api/execute/{executionId}/status`.
 
-The real paths are:
+**Root cause, from the maintainer:** `/api/executions` was never an API path at all. It is the
+*docs page slug* — `docs/api/index.md` links `[Executions](/api/executions)`, and
+`docs/api/executions.md` documents endpoints that all live under `/api/workflows/...`. Whoever
+wrote the auth page conflated a documentation URL with a route. That is a better explanation than
+the one I gave, and worth remembering as a class of bug: a docs site and an API can share a
+namespace and drift apart silently.
 
-| What you want | Actual route |
-|---|---|
-| A workflow's execution history | `GET /api/workflows/{workflowId}/executions` |
-| One workflow execution | `GET /api/workflows/executions/{executionId}/status` |
-| One direct execution | `GET /api/execute/{executionId}/status` |
+**Two things I got wrong, corrected on review:**
 
-This is the one that cost me real time, because the authentication page is where you go to find
-out what your key can do, and `/api/executions` is exactly the path you'd guess from REST
-convention anyway.
+- **I said there was "no route there at all". There is one.**
+  `POST /api/executions/{executionId}/cancel` exists. My probes were GET-only, so I never saw it.
+  It resolves auth by session and rejects `kh_` keys, so it belongs in the session-only list rather
+  than the accepted one, which is where it now sits.
+- **My replacement enumerated `/api/execute` sub-paths and under-covered them.**
+  I listed transfer, contract-call, check-and-execute and status, and missed `/swap`, `/node` and
+  the `/api/execute/{protocol}/{action}` catch-all, all of which accept `kh_` keys through the same
+  gate. The maintainer's point stands: that section is a *scope-boundary list*, not a route index,
+  so the loose prefix was strictly more accurate than my precise-but-partial list. Someone
+  integrating against `/api/execute/aave/supply` would have read my version and concluded their key
+  was rejected — the same class of error the PR was fixing. Being more specific made it worse.
 
-Two smaller notes on the same list, stated precisely because the first draft of these notes
-overstated them:
-
-- **`/api/execute` on its own 404s**, but `/api/execute/transfer`, `/api/execute/contract-call`
-  and `/api/execute/{id}/status` all work. Read as a prefix rather than an endpoint, the docs are
-  fine.
-- **`GET /api/organizations` returns 401 to a valid `kh_` key**, while the list says organization
-  management is accepted. `/api/organizations/{id}` does exist (GET returns 405), so this looks
-  like the collection route specifically, not organization management as a whole.
-- **`/api/analytics` and `/api/billing` don't exist** as routes. The docs only mention
-  "organization-scoped billing and analytics" in prose, never as paths, so this isn't really a
-  contradiction, just a dead end if you go looking.
-
-Suggested fix: correct the `/api/executions` bullet. Submitted as [KeeperHub/keeperhub#1885](https://github.com/KeeperHub/keeperhub/pull/1885).
+**The useful outcome:** while verifying, the maintainer found that `cancel` and
+`/api/workflows/{id}/go-live` were session-only by accident rather than by design, since every
+sibling execution route uses `getDualAuthContext` and neither is a credential or human-approval
+boundary. That became ticket KEEP-1083 and the fix merged as
+[#1905](https://github.com/KeeperHub/keeperhub/pull/1905). So a docs report surfaced a real auth
+inconsistency in the code.
 
 ## 2. A simulation that completes returns HTTP 400
 
