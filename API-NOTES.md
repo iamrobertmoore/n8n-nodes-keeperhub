@@ -33,7 +33,7 @@ of my original claims were wrong and the reason is instructive.
 and `GET /api/execute/{executionId}/status`.
 
 **Root cause, from the maintainer:** `/api/executions` was never an API path at all. It is the
-*docs page slug* — `docs/api/index.md` links `[Executions](/api/executions)`, and
+*docs page slug*, `docs/api/index.md` links `[Executions](/api/executions)`, and
 `docs/api/executions.md` documents endpoints that all live under `/api/workflows/...`. Whoever
 wrote the auth page conflated a documentation URL with a route. That is a better explanation than
 the one I gave, and worth remembering as a class of bug: a docs site and an API can share a
@@ -51,7 +51,7 @@ namespace and drift apart silently.
   gate. The maintainer's point stands: that section is a *scope-boundary list*, not a route index,
   so the loose prefix was strictly more accurate than my precise-but-partial list. Someone
   integrating against `/api/execute/aave/supply` would have read my version and concluded their key
-  was rejected — the same class of error the PR was fixing. Being more specific made it worse.
+  was rejected, the same class of error the PR was fixing. Being more specific made it worse.
 
 **The useful outcome:** while verifying, the maintainer found that `cancel` and
 `/api/workflows/{id}/go-live` were session-only by accident rather than by design, since every
@@ -81,8 +81,17 @@ one.
 `KeeperHubError` on any non-2xx, so callers using it get an exception and never see `wouldRevert`
 or `revertReason`, which is the whole point of the flag.
 
-**(c) The dry run's error message is worse than the real one.** Same insufficient balance, two
-paths:
+**(c) The dry run's error message was worse than the real one. This has since been fixed.**
+
+Re-checked 11 August 2026, the simulator now returns a clean, typed message that is better than
+the execution path's, because it also names the wallet and the shortfall:
+
+```
+Insufficient ETH balance. Have: 0.043674521801576, Need: 999.0.
+Fund 0xd69865fbd23bcb6548b80c2451e40496c433744e with at least 998.
+```
+
+The status code is still `400`, so (a) above stands. Recorded as originally found:
 
 ```
 simulate: true  ->  "Simulation reverted: missing revert data (action=\"call\", data=null,

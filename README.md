@@ -23,6 +23,31 @@ Every one of these is a real Ethereum Sepolia transaction produced by the node, 
 
 Execution IDs are org-scoped, so the KeeperHub team can look any of them up directly.
 
+### Measured, not asserted
+
+31 runs of the node's own code path against Sepolia on 11 August 2026.
+Reproduce with `node scripts/benchmark.mjs --pass=affordable --runs=10`; raw data in
+[`benchmark-results.json`](./benchmark-results.json).
+
+| Measure | Result |
+|---|---|
+| Affordable transfers landed | **11/11** |
+| Impossible transfers refused **before submission** | **20/20** |
+| Impossible transfers that reached the chain | **0** |
+| Time to landed transaction (p50 / p95) | 19.2s / 30.8s |
+| Time to refusal, no gas spent (p50 / p95) | 0.7s / 7.1s |
+| Status polls per landed transfer (p50 / max) | 1 / 1 |
+| Gas cost per landed transfer (p50) | 59,851,548,111,375 wei |
+| Runs needing an HTTP retry | 0/11 |
+
+**The second row is the one that matters.** Twenty transfers the wallet could not afford were
+stopped by the simulation gate before anything was submitted, so none of them cost gas. Landing a
+transaction is easy; refusing the ones that were always going to revert, every time, and proving
+it, is the part worth measuring.
+
+All 11 transaction hashes were independently verified against a public Sepolia RPC with
+`eth_getTransactionReceipt`: 11/11 returned `status: 0x1`.
+
 **Contributed upstream during the event:** [KeeperHub/keeperhub#1885](https://github.com/KeeperHub/keeperhub/pull/1885), merged. It corrected the execution endpoint paths in the API auth docs, and while reviewing it the maintainer found that `executions/cancel` and `workflows/go-live` were session-only by accident rather than by design. That became ticket KEEP-1083 and a code fix, [#1905](https://github.com/KeeperHub/keeperhub/pull/1905), also merged.
 
 ## KeeperHub surfaces used

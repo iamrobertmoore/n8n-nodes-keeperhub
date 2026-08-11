@@ -32,7 +32,8 @@
     "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
     "test": "node --test test/run-tests.js",
     "check-version": "node bin/check-version.js",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "benchmark": "node scripts/benchmark.mjs"
   },
   "files": [
     "dist",
