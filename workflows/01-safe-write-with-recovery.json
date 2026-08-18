@@ -54,7 +54,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// The simulation gate stopped attempt 1 before any gas was spent, and the\n// normalised error tells us why. Recalculate something the wallet can\n// actually afford and try again, this is the recovery the audit trail\n// should show.\nconst failure = String(\n  $json.error?.message ?? $json.error ?? $json.keeperhub?.message ?? 'unknown'\n);\n\nreturn [{\n  json: {\n    recovered_from: failure.slice(0, 200),\n    recipient: '0x000000000000000000000000000000000000dEaD',\n    amount: '0.0001',\n    attempt: 'retry'\n  }\n}];"
+        "jsCode": "// Attempt 1 was refused before anything was submitted, so it cost nothing.\n// KeeperHub's refusal tells us exactly what the wallet actually holds, so\n// read it and size the retry from that rather than from a number picked in\n// advance. Falls back to a fixed small amount if the message shape changes.\nconst failure = String(\n  $json.error?.message ?? $json.error ?? $json.keeperhub?.message ?? ''\n);\n\nconst have = Number((failure.match(/Have:\\s*([0-9.]+)/) || [])[1]);\n\nlet amount = '0.0001';\nlet basis = 'message not parseable, fell back to a fixed 0.0001';\n\nif (Number.isFinite(have) && have > 0.0002) {\n  // 10% of what we hold, so there is always plenty left for gas.\n  amount = Math.max(have * 0.1, 0.0001).toFixed(6);\n  basis = `10% of the ${have} the wallet actually holds, read from the refusal`;\n}\n\nreturn [{\n  json: {\n    recovered_from: failure.slice(0, 160),\n    available: Number.isFinite(have) ? have : null,\n    amount,\n    basis,\n    recipient: '0x000000000000000000000000000000000000dEaD',\n    attempt: 'retry'\n  }\n}];"
       },
       "id": "a1000000-0000-4000-8000-000000000004",
       "name": "Recalculate a safe amount",
@@ -63,7 +63,8 @@
       "position": [
         460,
         420
-      ]
+      ],
+      "notes": "Reads the wallet balance out of the refusal message and sizes the retry from it, rather than using a number chosen in advance."
     },
     {
       "parameters": {
