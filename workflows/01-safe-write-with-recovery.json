@@ -32,7 +32,7 @@
         "chainId": 11155111,
         "recipientAddress": "={{ $json.recipient }}",
         "amount": "={{ $json.amount }}",
-        "tokenAddress": "",
+        "erc20Address": "",
         "options": {}
       },
       "id": "a1000000-0000-4000-8000-000000000003",
@@ -73,7 +73,7 @@
         "chainId": 11155111,
         "recipientAddress": "={{ $json.recipient }}",
         "amount": "={{ $json.amount }}",
-        "tokenAddress": "",
+        "erc20Address": "",
         "options": {}
       },
       "id": "a1000000-0000-4000-8000-000000000005",

@@ -54,7 +54,7 @@
         "operation": "send",
         "chainId": 11155111,
         "amount": "={{ $fromAI('amount', 'Human-readable amount of ETH to send, for example 0.0001', 'string') }}",
-        "tokenAddress": "",
+        "erc20Address": "",
         "options": {},
         "descriptionType": "manual",
         "toolDescription": "Send ETH on Ethereum Sepolia through KeeperHub. The recipient is given by NAME from the KeeperHub address book, you never handle a hex address. Simulates the transfer first and refuses to submit anything that would revert, submits with an idempotency key so it cannot double-send, then waits for confirmation and returns the transaction hash and link.",

@@ -305,9 +305,9 @@ async function runDirectWrite(
 			);
 		}
 		payload.amount = String(this.getNodeParameter('amount', i));
-		const tokenAddress = this.getNodeParameter('tokenAddress', i, '') as string;
-		if (tokenAddress) {
-			payload.tokenAddress = assertAddress.call(this, tokenAddress, 'Token Address', i);
+		const erc20Address = this.getNodeParameter('erc20Address', i, '') as string;
+		if (erc20Address) {
+			payload.tokenAddress = assertAddress.call(this, erc20Address, 'ERC-20 Contract Address', i);
 		}
 	} else {
 		payload.contractAddress = assertAddress.call(
@@ -353,7 +353,10 @@ async function runDirectWrite(
 			result.status = 'simulation-failed';
 			result.attempts = reqCtx.attempts as unknown as IDataObject[];
 			if (options.abortOnSimulationFailure !== false) {
-				throw new KeeperHubApiError(simRes.error);
+				throw new NodeOperationError(this.getNode(), simRes.error.message, {
+					itemIndex: i,
+					description: [simRes.error.detail, simRes.error.hint].filter(Boolean).join(' '),
+				});
 			}
 			return result;
 		}
@@ -367,13 +370,19 @@ async function runDirectWrite(
 		if ((wouldRevert || explicitlyFailed) && options.abortOnSimulationFailure !== false) {
 			result.status = 'aborted-by-simulation';
 			result.attempts = reqCtx.attempts as unknown as IDataObject[];
-			throw new KeeperHubApiError({
-				message: 'Simulation says this transaction would revert; not submitting',
-				detail: (simulation.revertReason as string) ?? undefined,
-				hint: 'Turn off "Abort on Simulation Failure" to submit anyway.',
-				envelope: 'structured',
-				raw: simulation,
-			});
+			throw new NodeOperationError(
+				this.getNode(),
+				'Simulation says this transaction would revert, so nothing was submitted',
+				{
+					itemIndex: i,
+					description: [
+						(simulation.revertReason as string) ?? '',
+						'Turn off "Abort on Simulation Failure" to submit anyway.',
+					]
+						.filter(Boolean)
+						.join(' '),
+				},
+			);
 		}
 	}
 
@@ -439,13 +448,19 @@ async function runDirectWrite(
 
 		if (FAILED_STATUSES.has(String(final.status ?? '')) && options.failOnRevert !== false) {
 			result.attempts = reqCtx.attempts as unknown as IDataObject[];
-			throw new KeeperHubApiError({
-				message: `Execution ${executionId} finished with status "${final.status}"`,
-				detail: typeof final.error === 'string' ? final.error : undefined,
-				hint: 'The full audit trail is on the execution record; fetch it with the Execution resource.',
-				envelope: 'structured',
-				raw: final,
-			});
+			throw new NodeOperationError(
+				this.getNode(),
+				`Execution ${executionId} finished with status "${final.status}"`,
+				{
+					itemIndex: i,
+					description: [
+						typeof final.error === 'string' ? final.error : '',
+						'The full audit trail is on the execution record, fetch it with the Execution resource.',
+					]
+						.filter(Boolean)
+						.join(' '),
+				},
+			);
 		}
 	}
 

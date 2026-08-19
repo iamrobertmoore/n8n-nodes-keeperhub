@@ -4,7 +4,9 @@ Execute onchain transactions from [n8n](https://n8n.io) via [KeeperHub](https://
 
 n8n is the reasoning and orchestration layer. KeeperHub is the execution layer. This node is the join.
 
-**[Demo video (3 min)](https://youtu.be/HV9kF7lwW2Q)** · **[npm](https://www.npmjs.com/package/n8n-nodes-keeperhub)** (published from CI with SLSA provenance)
+**🥉 Third place, [KeeperHub Agents Onchain hackathon](https://dorahacks.io/hackathon/agents-onchain/detail)**, out of 190 submissions and 10 finalists, judged by the KeeperHub engineering team.
+
+**[Demo video (3 min)](https://www.youtube.com/watch?v=HV9kF7lwW2Q)** · **[npm](https://www.npmjs.com/package/n8n-nodes-keeperhub)** (published from CI with SLSA provenance)
 
 ---
 
@@ -135,6 +137,16 @@ The credential test probes `GET /api/projects`, **not** `GET /api/workflows`. `/
 n8n's [verification guidelines](https://docs.n8n.io/integrations/creating-nodes/build/reference/verification-guidelines/) forbid runtime dependencies in a community node, so this package cannot ship `@keeperhub/sdk`.
 
 Instead the SDK is a **devDependency**, and [`test/sdk-conformance.ts`](./test/sdk-conformance.ts) asserts at typecheck time that our local mirrors of the REST contract stay assignable to KeeperHub's official types. If KeeperHub changes the contract, CI fails here rather than in someone's production workflow. No runtime weight, no silent drift.
+
+## Upgrading to 0.4.0
+
+The Transfer node's optional **Token Address** parameter is now **ERC-20 Contract Address**
+(`tokenAddress` renamed to `erc20Address`). If you have a workflow that sets it, re-select the
+value once. Native-token transfers, which leave it empty, are unaffected.
+
+The rename exists because n8n's verification linter reads any parameter named `token` as a secret
+and requires it to be a masked password field. It is a public contract address, so renaming was
+more honest than hiding it.
 
 ## Install
 

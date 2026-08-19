@@ -137,7 +137,7 @@ export const description: INodeProperties[] = [
 		default: '',
 		displayOptions: { show: { resource: ['transfer'], recipientMode: ['addressBook'] } },
 		description:
-			'Saved recipient from your KeeperHub address book, matched by label. Choose from the list, or specify a label using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
+			'Saved recipient from your KeeperHub address book, matched by label. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
 	},
 	{
 		displayName: 'Recipient Address',
@@ -160,8 +160,8 @@ export const description: INodeProperties[] = [
 		description: 'Human-readable amount, not wei. For example 0.001.',
 	},
 	{
-		displayName: 'Token Address',
-		name: 'tokenAddress',
+		displayName: 'ERC-20 Contract Address',
+		name: 'erc20Address',
 		type: 'string',
 		default: '',
 		placeholder: '0x... (leave empty for the native token)',
@@ -278,14 +278,6 @@ export const description: INodeProperties[] = [
 		displayOptions: { show: isDirectWrite },
 		options: [
 			{
-				displayName: 'Simulate First',
-				name: 'simulateFirst',
-				type: 'boolean',
-				default: true,
-				description:
-					'Whether to run a dry-run before submitting. Strongly recommended: it catches reverts without spending gas.',
-			},
-			{
 				displayName: 'Abort on Simulation Failure',
 				name: 'abortOnSimulationFailure',
 				type: 'boolean',
@@ -294,12 +286,11 @@ export const description: INodeProperties[] = [
 					'Whether to stop when the simulation says the transaction would revert. Turn off to submit anyway.',
 			},
 			{
-				displayName: 'Wait for Confirmation',
-				name: 'waitForConfirmation',
-				type: 'boolean',
-				default: true,
-				description:
-					'Whether to poll until the execution reaches a terminal state and return the transaction hash',
+				displayName: 'Base Backoff (Ms)',
+				name: 'baseBackoffMs',
+				type: 'number',
+				default: 800,
+				description: 'Starting delay for exponential backoff with full jitter',
 			},
 			{
 				displayName: 'Fail on Reverted Execution',
@@ -308,36 +299,6 @@ export const description: INodeProperties[] = [
 				default: true,
 				description:
 					'Whether to raise an error when the execution finishes in a failed state. Turn off to inspect the audit trail instead.',
-			},
-			{
-				displayName: 'Timeout (Seconds)',
-				name: 'timeoutSeconds',
-				type: 'number',
-				default: 180,
-				description: 'How long to wait for a terminal state before giving up',
-			},
-			{
-				displayName: 'Poll Interval (Seconds)',
-				name: 'pollIntervalSeconds',
-				type: 'number',
-				default: 3,
-				description:
-					'Fallback interval between status checks. The server X-Poll-Interval-Hint header takes precedence when present.',
-			},
-			{
-				displayName: 'Max Attempts',
-				name: 'maxAttempts',
-				type: 'number',
-				default: 4,
-				description:
-					'Maximum HTTP attempts per call. Retries apply to rate limits and 5xx responses; Retry-After is honoured.',
-			},
-			{
-				displayName: 'Base Backoff (Ms)',
-				name: 'baseBackoffMs',
-				type: 'number',
-				default: 800,
-				description: 'Starting delay for exponential backoff with full jitter',
 			},
 			{
 				displayName: 'Gas Limit Multiplier',
@@ -354,6 +315,45 @@ export const description: INodeProperties[] = [
 				default: '',
 				description:
 					'Reuse a key to safely replay a submission within KeeperHub 24-hour window. Leave empty to generate one per item.',
+			},
+			{
+				displayName: 'Max Attempts',
+				name: 'maxAttempts',
+				type: 'number',
+				default: 4,
+				description:
+					'Maximum HTTP attempts per call. Retries apply to rate limits and 5xx responses; Retry-After is honoured.',
+			},
+			{
+				displayName: 'Poll Interval (Seconds)',
+				name: 'pollIntervalSeconds',
+				type: 'number',
+				default: 3,
+				description:
+					'Fallback interval between status checks. The server X-Poll-Interval-Hint header takes precedence when present.',
+			},
+			{
+				displayName: 'Simulate First',
+				name: 'simulateFirst',
+				type: 'boolean',
+				default: true,
+				description:
+					'Whether to run a dry-run before submitting. Strongly recommended: it catches reverts without spending gas.',
+			},
+			{
+				displayName: 'Timeout (Seconds)',
+				name: 'timeoutSeconds',
+				type: 'number',
+				default: 180,
+				description: 'How long to wait for a terminal state before giving up',
+			},
+			{
+				displayName: 'Wait for Confirmation',
+				name: 'waitForConfirmation',
+				type: 'boolean',
+				default: true,
+				description:
+					'Whether to poll until the execution reaches a terminal state and return the transaction hash',
 			},
 		],
 	},
