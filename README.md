@@ -4,6 +4,8 @@ Execute onchain transactions from [n8n](https://n8n.io) via [KeeperHub](https://
 
 n8n is the reasoning and orchestration layer. KeeperHub is the execution layer. This node is the join.
 
+**✅ Verified by n8n.** Approved by the n8n team and shipping in an upcoming verified-nodes release batch, after which it appears in the in-app node panel and is installable on n8n Cloud. Passed [`@n8n/scan-community-package`](https://docs.n8n.io/integrations/creating-nodes/build/reference/verification-guidelines/) on all four stages against the published 0.4.0.
+
 **🥉 Third place, [KeeperHub Agents Onchain hackathon](https://dorahacks.io/hackathon/agents-onchain/detail)**, out of 190 submissions and 10 finalists, judged by the KeeperHub engineering team.
 
 **[Demo video (3 min)](https://www.youtube.com/watch?v=HV9kF7lwW2Q)** · **[npm](https://www.npmjs.com/package/n8n-nodes-keeperhub)** (published from CI with SLSA provenance)
@@ -63,7 +65,7 @@ All 11 transaction hashes were independently verified against a public Sepolia R
 | **Workflow builder** | Yes | KeeperHub-authored workflows are what the trigger node polls |
 | **MCP server** | Yes | [`workflows/04-mcp-server.json`](./workflows/04-mcp-server.json) points n8n's MCP Client Tool at `https://app.keeperhub.com/mcp`, 35 tools, `kh_` bearer auth |
 | **CLI** | No | it is KeeperHub's own tool, not an integration surface |
-| **x402 / MPP** | No, deliberately | paying a 402 challenge requires signing a payment, which requires a runtime dependency, and n8n forbids those in a verified community node. Verification is the distribution route for an n8n node, so it was kept |
+| **x402 / MPP** | No, deliberately | paying a 402 challenge requires signing a payment, which requires a runtime dependency, and n8n forbids those in a verified community node. Verification is the distribution route for an n8n node, so it was kept. The package is now verified |
 
 ## Why this exists
 
@@ -150,7 +152,9 @@ more honest than hiding it.
 
 ## Install
 
-**n8n Cloud / self-hosted (v1.94.0+):** Settings → Community Nodes → Install → `n8n-nodes-keeperhub`.
+**As a verified node.** Once the next verified-nodes batch ships, it appears directly in the n8n node panel on both Cloud and self-hosted, with no install step at all. That is the recommended route.
+
+**Before then, or to pin a version — self-hosted (v1.94.0+):** Settings → Community Nodes → Install → `n8n-nodes-keeperhub`.
 
 **Manual:**
 
