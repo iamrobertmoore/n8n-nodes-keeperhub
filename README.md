@@ -4,7 +4,7 @@ Execute onchain transactions from [n8n](https://n8n.io) via [KeeperHub](https://
 
 n8n is the reasoning and orchestration layer. KeeperHub is the execution layer. This node is the join.
 
-**✅ Verified by n8n.** Approved by the n8n team and shipping in an upcoming verified-nodes release batch, after which it appears in the in-app node panel and is installable on n8n Cloud. Passed [`@n8n/scan-community-package`](https://docs.n8n.io/integrations/creating-nodes/build/reference/verification-guidelines/) on all four stages against the published 0.4.0.
+**✅ Verified by n8n, and live on n8n Cloud.** Search for **KeeperHub** on the canvas and drag it in. No npm install, no self-hosting, nothing to configure but a credential.
 
 **🥉 Third place, [KeeperHub Agents Onchain hackathon](https://dorahacks.io/hackathon/agents-onchain/detail)**, out of 190 submissions and 10 finalists, judged by the KeeperHub engineering team.
 
@@ -152,9 +152,9 @@ more honest than hiding it.
 
 ## Install
 
-**As a verified node.** Once the next verified-nodes batch ships, it appears directly in the n8n node panel on both Cloud and self-hosted, with no install step at all. That is the recommended route.
+**n8n Cloud:** nothing to install. It is a verified node, so it is already in the node panel. Search for **KeeperHub** on the canvas and drag it in.
 
-**Before then, or to pin a version — self-hosted (v1.94.0+):** Settings → Community Nodes → Install → `n8n-nodes-keeperhub`.
+**Self-hosted (v1.94.0+):** Settings → Community Nodes → Install → `n8n-nodes-keeperhub`.
 
 **Manual:**
 
