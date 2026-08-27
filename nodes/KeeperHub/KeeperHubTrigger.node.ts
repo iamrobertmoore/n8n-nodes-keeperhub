@@ -34,7 +34,7 @@ export class KeeperHubTrigger implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'KeeperHub Trigger',
 		name: 'keeperHubTrigger',
-		icon: { light: 'file:keeperhub.svg', dark: 'file:keeperhub-dark.svg' },
+		icon: 'file:keeperhub.svg',
 		group: ['trigger'],
 		version: 1,
 		subtitle: '={{$parameter["event"]}}',

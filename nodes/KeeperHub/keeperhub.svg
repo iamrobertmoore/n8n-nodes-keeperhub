@@ -1,6 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-  <rect x="0" y="0" width="64" height="64" rx="12" fill="#0F172A"/>
-  <path d="M32 12 L48 19 L48 33 C48 42 41 49 32 52 C23 49 16 42 16 33 L16 19 Z" fill="#38BDF8"/>
-  <path d="M27 28 L27 24 A5 5 0 0 1 37 24 L37 28" fill="none" stroke="#0F172A" stroke-width="3" stroke-linecap="round"/>
-  <rect x="24" y="28" width="16" height="13" rx="2" fill="#0F172A"/>
+  <title>KeeperHub</title>
+  <rect width="64" height="64" rx="12" fill="#0F172A"/>
+  <g transform="translate(19.272 12) scale(0.0801042)" fill="#00FF4F">
+    <rect x="226.98" y="204.28" width="90.79" height="90.79"/>
+    <path d="M204.28,90.79V0H113.49V90.79A113.62,113.62,0,0,1,0,204.28v90.79A113.62,113.62,0,0,1,113.49,408.56v90.79h90.79V408.56A203.94,203.94,0,0,0,128.2,249.68,204,204,0,0,0,204.28,90.79Z"/>
+  </g>
 </svg>

@@ -24,7 +24,7 @@ export class KeeperHub implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'KeeperHub',
 		name: 'keeperHub',
-		icon: { light: 'file:keeperhub.svg', dark: 'file:keeperhub-dark.svg' },
+		icon: 'file:keeperhub.svg',
 		group: ['transform'],
 		version: 1,
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
