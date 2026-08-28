@@ -27,7 +27,7 @@
   },
   "main": "index.js",
   "scripts": {
-    "build": "rm -rf dist && tsc && mkdir -p dist/nodes/KeeperHub dist/credentials && cp nodes/KeeperHub/keeperhub.svg dist/nodes/KeeperHub/keeperhub.svg && cp nodes/KeeperHub/keeperhub-dark.svg dist/nodes/KeeperHub/keeperhub-dark.svg && cp nodes/KeeperHub/keeperhub.svg dist/credentials/keeperhub.svg",
+    "build": "rm -rf dist && tsc && mkdir -p dist/nodes/KeeperHub dist/credentials && cp nodes/KeeperHub/keeperhub.svg dist/nodes/KeeperHub/keeperhub.svg && cp nodes/KeeperHub/keeperhub.svg dist/credentials/keeperhub.svg",
     "dev": "tsc --watch",
     "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
     "test": "node --test test/run-tests.js",
